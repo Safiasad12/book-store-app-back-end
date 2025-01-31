@@ -15,3 +15,16 @@ export const registrationValid = (req: Request, res: Response, next: NextFunctio
   }
   next();
 };
+
+
+export const loginValid = (req: Request, res: Response, next: NextFunction) => {
+    const schema = Joi.object({
+        email: Joi.string().required(),
+        password: Joi.string().required()
+    });
+    const {error} = schema.validate(req.body);
+    if(error){
+        throw error;
+    }
+    next();
+}
