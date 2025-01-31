@@ -2,11 +2,14 @@ import morgan from "morgan";
 import express from 'express';
 import dotenv from 'dotenv';
 import logger from "./config/logger.config";
+import connectDB from "./config/database.config";
 
 
 
 const app = express();
 dotenv.config();
+connectDB();
+
 const morganFormat = ":method :url :status :response-time ms";
 const port = process.env.APP_PORT;
 const host = process.env.APP_HOST;

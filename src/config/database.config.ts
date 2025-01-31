@@ -10,7 +10,7 @@ const connectDB = async (): Promise<void> => {
     logger.info('connected to MongoDB');
   } catch (err) {
     logger.error('Error connecting to MongoDB:', err);
-    process.exit(1); 
+    process.exit(1);
   }
 };
 
