@@ -1,10 +1,16 @@
 
 import { Router } from "express";
 
-import { getBooks } from "../controller/book.controller";
+import { getAllBooks, getBookById } from "../controller/book.controller";
+
+import { validateBookId } from "../validator/book.validator";
 
 const bookRouter = Router();
 
-bookRouter.get('/', getBooks);
+
+
+bookRouter.get('/', getAllBooks);
+bookRouter.get('/:BookId', validateBookId, getBookById);
+
 
 export default bookRouter;

@@ -11,3 +11,10 @@ export const getAllBookService = async (): Promise<[IBook[], number]> => {
 
   return [books, totalBooks];
   };
+
+
+  export const getBookByIdService = async (bookId: string): Promise<IBook | null> => {
+    const book = await Book.findById(bookId);
+    if (!book) throw new Error('Book Not found');
+    else return book;
+  };
