@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import HttpStatus from 'http-status-codes';
-import { getAllBookService, getBookByIdService, createBookService } from "../service/book.service";
+import { getAllBookService, getBookByIdService, createBookService, updateBookService } from "../service/book.service";
 
 
 
@@ -42,6 +42,29 @@ export const getBookById = async (req: Request, res: Response): Promise<void> =>
       code: HttpStatus.OK,
       message: 'Book fetched successfully',
       data
+    });
+  } catch (error: any) {
+    res.status(HttpStatus.BAD_REQUEST).json({
+      code: HttpStatus.BAD_REQUEST,
+      Error: error.message,
+    });
+  }
+};
+
+
+
+
+
+export const  updateBookById = async (req: Request, res: Response): Promise<void> => {
+
+  const data = await updateBookService(req.params.BookId, req.body);
+
+  try {
+   
+    res.status(HttpStatus.ACCEPTED).json({
+      code: HttpStatus.ACCEPTED,
+      data,
+      message: 'Book Updated Successfully',
     });
   } catch (error: any) {
     res.status(HttpStatus.BAD_REQUEST).json({

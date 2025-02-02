@@ -1,5 +1,6 @@
 import Book from '../model/book.model';
 import { IBook } from '../interface/book.interface';
+import { IUser } from '../interface/user.interface';
 
 
 export const createBookService = async (bookData: IBook, filePath: string | undefined): Promise<IBook> => {
@@ -35,3 +36,19 @@ export const getAllBookService = async (): Promise<[IBook[], number]> => {
     if (!book) throw new Error('Book Not found');
     else return book;
   };
+
+
+
+
+
+  export const updateBookService = async (
+    bookId: string,
+    updateData: Partial<IUser>,
+  ): Promise<IBook | void | null> => {
+    const book = await Book.findById(bookId);
+    if (!book) throw new Error('Book Not Exist');
+
+    return await Book.findByIdAndUpdate(bookId, updateData, { new: true });
+  };
+
+ 
