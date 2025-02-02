@@ -1,16 +1,17 @@
 
 import { Router } from "express";
-
-import { getAllBooks, getBookById } from "../controller/book.controller";
-
-import { validateBookId } from "../validator/book.validator";
+import { getAllBooks, getBookById, createBook } from "../controller/book.controller";
+import { validateBookId, validateCreateBook } from "../validator/book.validator";
+import { upload } from "../middleware/multer.middleware";
+import { adminAuth } from "../middleware/auth.middleware";
 
 const bookRouter = Router();
 
 
-
+bookRouter.post('/', adminAuth, upload.single('bookImage'), createBook);
 bookRouter.get('/', getAllBooks);
 bookRouter.get('/:BookId', validateBookId, getBookById);
+
 
 
 export default bookRouter;

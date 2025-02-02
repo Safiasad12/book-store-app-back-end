@@ -1,7 +1,18 @@
 import { Request, Response } from 'express';
 import HttpStatus from 'http-status-codes';
+import { getAllBookService, getBookByIdService, createBookService } from "../service/book.service";
 
-import { getAllBookService, getBookByIdService } from "../service/book.service";
+
+
+export const createBook = async (req: Request, res: Response): Promise<void> => {
+  const data = await createBookService(req.body, req.file?.path);
+
+  res.status(HttpStatus.CREATED).json({
+    code: HttpStatus.CREATED,
+    message: 'Book created successfully',
+    data,
+  });
+};
 
 
 

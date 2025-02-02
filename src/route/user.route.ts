@@ -4,8 +4,9 @@ import { registrationValid, loginValid } from "../validator/user.validator";
 
 const userRouter = Router();
 
-userRouter.post("/register", registrationValid, userRegistration);
 userRouter.post("/", loginValid, userLogin);
+userRouter.post("/register", registrationValid, userRegistration);
+
 
 export default userRouter;
 
