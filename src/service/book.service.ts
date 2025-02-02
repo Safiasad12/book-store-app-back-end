@@ -39,9 +39,7 @@ export const getAllBookService = async (): Promise<[IBook[], number]> => {
 
 
 
-
-
-  export const updateBookService = async (
+  export const updateBookByIdService = async (
     bookId: string,
     updateData: Partial<IUser>,
   ): Promise<IBook | void | null> => {
@@ -52,3 +50,9 @@ export const getAllBookService = async (): Promise<[IBook[], number]> => {
   };
 
  
+
+
+  export const  deleteBookByIdService = async (bookId: string): Promise<void> => {
+    const book = await Book.findByIdAndDelete(bookId);
+    if (!book) throw new Error('Book not found');
+};

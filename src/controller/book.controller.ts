@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import HttpStatus from 'http-status-codes';
-import { getAllBookService, getBookByIdService, createBookService, updateBookService } from "../service/book.service";
+import { getAllBookService, getBookByIdService, createBookService, updateBookByIdService, deleteBookByIdService } from "../service/book.service";
 
 
 
@@ -57,10 +57,9 @@ export const getBookById = async (req: Request, res: Response): Promise<void> =>
 
 export const  updateBookById = async (req: Request, res: Response): Promise<void> => {
 
-  const data = await updateBookService(req.params.BookId, req.body);
+  const data = await updateBookByIdService(req.params.BookId, req.body);
 
-  try {
-   
+  try {  
     res.status(HttpStatus.ACCEPTED).json({
       code: HttpStatus.ACCEPTED,
       data,
@@ -68,6 +67,24 @@ export const  updateBookById = async (req: Request, res: Response): Promise<void
     });
   } catch (error: any) {
     res.status(HttpStatus.BAD_REQUEST).json({
+      code: HttpStatus.BAD_REQUEST,
+      Error: error.message,
+    });
+  }
+};
+
+
+
+export const deleteBookById = async (req: Request, res: Response): Promise<void> => {
+    try {
+      await deleteBookByIdService(req.params.BookId);
+
+    res.status(HttpStatus.OK).json({
+      code: HttpStatus.OK,
+      message: 'Book deleted successfully',
+    });
+    } catch (error: any) {
+      res.status(HttpStatus.BAD_REQUEST).json({
       code: HttpStatus.BAD_REQUEST,
       Error: error.message,
     });
