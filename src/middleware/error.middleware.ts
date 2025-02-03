@@ -4,7 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 // Route not found handler
 export const notFound = (req: Request, res: Response): void => {
   res.status(501).json({
-    message: 'Oops, route not found',
+    message: 'route not found',
   });
 };
 
