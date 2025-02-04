@@ -39,6 +39,7 @@ export const userAuth = async (req: Request, res: Response, next: NextFunction) 
             req.body.user_id = payload.id;
             console.log(req.body.user_id)
             next();
+            
         } else {
             throw Error('Admin cannot be user');
         }

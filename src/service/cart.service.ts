@@ -75,3 +75,43 @@ export const addToCartService = async (
         return newBook;
     }
 };
+
+
+
+
+export const removeItemService = async (
+    userId: string,
+    bookId: string
+  ): Promise<ICart | undefined> => {
+    const cart = await Cart.findOne({ userId: userId });
+    if (!cart) throw new Error('Cart not found');
+  
+    const existingBookIndex = cart.books.findIndex(
+      (book: { bookId: string }) => book.bookId === bookId
+    );
+  
+    if (existingBookIndex === -1) throw new Error('Book not found in cart');
+ 
+    const bookDetails = await Book.findById(bookId);
+    if (!bookDetails) throw new Error('Book details not found');
+  
+    const bookQuantity = cart.books[existingBookIndex].quantity;
+  
+    cart.books.splice(existingBookIndex, 1);
+  
+   
+    cart.totalPrice -= bookDetails.price * bookQuantity;
+    cart.totalDiscountPrice -= bookDetails.discountPrice * bookQuantity;
+    cart.totalQuantity -= bookQuantity;  
+  
+   
+    cart.totalPrice = Math.max(cart.totalPrice, 0);
+    cart.totalDiscountPrice = Math.max(cart.totalDiscountPrice, 0);
+    cart.totalQuantity = Math.max(cart.totalQuantity, 0);
+  
+    
+    await cart.save();
+  
+    return cart;
+  };
+  
