@@ -14,7 +14,7 @@ export const adminAuth = async (req: Request, res: Response, next: NextFunction)
             throw Error('invalid token');
         }
         if (payload.role === 'admin') {
-            req.body.admin_user_id = payload.id;
+            // req.body.admin_user_id = payload.id;
             next();
         } else {
             throw Error('Not authorized for this function');
@@ -37,6 +37,7 @@ export const userAuth = async (req: Request, res: Response, next: NextFunction) 
         }
         if (payload.role === 'user') {
             req.body.user_id = payload.id;
+            console.log(req.body.user_id)
             next();
         } else {
             throw Error('Admin cannot be user');
