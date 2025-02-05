@@ -25,7 +25,6 @@ export const addToCartService = async (
             totalQuantity: 1,
             books: [{ bookId: bookDetails._id, quantity: 1, bookName: bookDetails.bookName, author: bookDetails.author, bookImage: bookDetails.bookImage, price: bookDetails.price, discountPrice: bookDetails.discountPrice, description: bookDetails.description }],
         });
-        console.log(createdData, "createdData")
         return createdData;
     }
 
