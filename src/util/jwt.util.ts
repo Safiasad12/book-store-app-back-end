@@ -12,7 +12,7 @@ export function accessSign(payload: { id: string, role: string }) {
 }
 
 export function accessVerify(token: string) { 
-    return jwt.verify(token, JWT_SECRET_ACCESS);   
+    return jwt.verify(token, JWT_SECRET_ACCESS);
 }
 
 export function refreshSign(payload: { id: string, role: string }) {

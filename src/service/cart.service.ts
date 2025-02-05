@@ -175,11 +175,22 @@ export const updateQuantityService = async (
 
 
 
-export const getCartService = async (userId: string): Promise<ICart | null> => {
+export const getCartDetailsService = async (userId: string): Promise<ICart | null> => {
 
     const cart = await Cart.findOne({ userId: userId });
 
     return cart;
 };
+
+
+
+export const emptyCartService = async (
+    userId: string
+  ): Promise<ICart | void> => {
+    const cart = await Cart.findOne({ userId });
+    if (!cart) throw new Error('User doesnt have Cart');
+    await Cart.deleteOne({ userId });
+  };
+
 
 

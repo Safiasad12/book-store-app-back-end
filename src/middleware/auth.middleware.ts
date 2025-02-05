@@ -4,6 +4,7 @@ import { error } from "winston";
 
 export const adminAuth = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        console.log("abj")
         let accessToken = req.header('Authorization');
         if (!accessToken) {
             throw error('accessToken required');

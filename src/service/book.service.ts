@@ -11,6 +11,7 @@ export const createBookService = async (bookData: IBook, filePath: string | unde
   }
 
   const updatedBookData = { ...bookData, bookImage };
+  
   const book = new Book(updatedBookData);
   const savedBook = await book.save();
 
