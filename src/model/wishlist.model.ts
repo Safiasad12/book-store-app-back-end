@@ -47,3 +47,5 @@ const wishListSchema = new Schema(
 wishListSchema.index({ userId: 1 }, { background: true });
 
 export default model<IWishList>('WishList', wishListSchema);
+
+
