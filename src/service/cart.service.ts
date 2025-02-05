@@ -115,3 +115,60 @@ export const removeItemService = async (
     return cart;
   };
   
+
+
+
+
+  export const updateQuantityService = async (
+    userId: string,
+    BookId: string,
+    quantityChange: number,
+  ): Promise<ICart> => {
+    const isUser = await User.findById(userId);
+    if (!isUser) throw new Error('User doesnt exist');
+
+    const cart = await Cart.findOne({ userId: userId });
+    if (!cart) throw new Error('Cart not found');
+
+    const bookIndex = cart.books.findIndex(
+      (book) => book.bookId.toString() === BookId.toString(),
+    );
+    if (bookIndex === -1) throw new Error('Book not found in cart');
+
+    const bookDetails = await Book.findOne({ _id: BookId });
+    if (!bookDetails) throw new Error('Book not found');
+
+    const existingBook = cart.books[bookIndex];
+    const newQuantity = existingBook.quantity + quantityChange;
+
+    if (newQuantity <= 0) {
+      cart.books.splice(bookIndex, 1);
+
+      cart.totalQuantity -= existingBook.quantity;
+      cart.totalPrice -= existingBook.quantity * bookDetails.price;
+      cart.totalDiscountPrice -=
+        existingBook.quantity * bookDetails.discountPrice;
+
+      if (cart.books.length === 0) {
+        cart.totalPrice = 0;
+        cart.totalDiscountPrice = 0;
+        cart.totalQuantity = 0;
+      }
+
+    await cart.save();
+    return cart;
+  }
+
+  
+  if (quantityChange > 0 && newQuantity > bookDetails.quantity)
+    throw new Error('Not enough stock available for this book');
+
+
+  cart.books[bookIndex].quantity = newQuantity;
+  cart.totalQuantity += quantityChange;
+  cart.totalPrice += quantityChange * bookDetails.price;
+  cart.totalDiscountPrice += quantityChange * bookDetails.discountPrice;
+
+  await cart.save();
+  return cart;
+};

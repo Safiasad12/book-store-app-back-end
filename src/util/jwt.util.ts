@@ -11,8 +11,8 @@ export function accessSign(payload: { id: string, role: string }) {
     return jwt.sign(payload, JWT_SECRET_ACCESS, { expiresIn: '1d' });
 }
 
-export function accessVerify(token: string) {
-    return jwt.verify(token, JWT_SECRET_ACCESS);
+export function accessVerify(token: string) { 
+    return jwt.verify(token, JWT_SECRET_ACCESS);   
 }
 
 export function refreshSign(payload: { id: string, role: string }) {

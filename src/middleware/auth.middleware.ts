@@ -27,23 +27,29 @@ export const adminAuth = async (req: Request, res: Response, next: NextFunction)
 export const userAuth = async (req: Request, res: Response, next: NextFunction) => {
     try {
         let accessToken = req.header('Authorization');
+        
         if (!accessToken) {
             throw error('accessToken required');
         }
+  
         accessToken = accessToken.split(' ')[1];
+
+        
         const payload: any = accessVerify(accessToken);
+       
         if (!payload) {
             throw Error('invalid token');
         }
         if (payload.role === 'user') {
-            req.body.user_id = payload.id;
-            console.log(req.body.user_id)
-            next();
             
+            req.body.user_id = payload.id;
+            next();
+
         } else {
             throw Error('Admin cannot be user');
         }
     } catch (error) {
+        
         next(Error);
     }
 }
