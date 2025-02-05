@@ -1,6 +1,6 @@
 import HttpStatus from 'http-status-codes';
 import { Request, Response } from 'express';
-import { addToCartService, removeItemService, updateQuantityService } from '../service/cart.service';
+import { addToCartService, getCartService, removeItemService, updateQuantityService } from '../service/cart.service';
 
 
 
@@ -57,6 +57,29 @@ export const addToCart = async (req: Request, res: Response): Promise<void> => {
       res.status(HttpStatus.OK).json({
         code: HttpStatus.OK,
         data: data,
+      });
+    } catch (error: any) {
+      res.status(HttpStatus.BAD_REQUEST).json({
+        code: HttpStatus.BAD_REQUEST,
+        error: error.message,
+      });
+    }
+  };
+
+
+
+
+  export const getCart = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const data = await getCartService(req.body.user_id);
+
+      res.status(HttpStatus.OK).json({
+        code: HttpStatus.OK,
+        data: data,
+        message: 'Cart Details',
       });
     } catch (error: any) {
       res.status(HttpStatus.BAD_REQUEST).json({

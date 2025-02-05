@@ -82,48 +82,48 @@ export const addToCartService = async (
 export const removeItemService = async (
     userId: string,
     bookId: string
-  ): Promise<ICart | undefined> => {
+): Promise<ICart | undefined> => {
     const cart = await Cart.findOne({ userId: userId });
     if (!cart) throw new Error('Cart not found');
-  
+
     const existingBookIndex = cart.books.findIndex(
-      (book: { bookId: string }) => book.bookId === bookId
+        (book: { bookId: string }) => book.bookId === bookId
     );
-  
+
     if (existingBookIndex === -1) throw new Error('Book not found in cart');
- 
+
     const bookDetails = await Book.findById(bookId);
     if (!bookDetails) throw new Error('Book details not found');
-  
+
     const bookQuantity = cart.books[existingBookIndex].quantity;
-  
+
     cart.books.splice(existingBookIndex, 1);
-  
-   
+
+
     cart.totalPrice -= bookDetails.price * bookQuantity;
     cart.totalDiscountPrice -= bookDetails.discountPrice * bookQuantity;
-    cart.totalQuantity -= bookQuantity;  
-  
-   
+    cart.totalQuantity -= bookQuantity;
+
+
     cart.totalPrice = Math.max(cart.totalPrice, 0);
     cart.totalDiscountPrice = Math.max(cart.totalDiscountPrice, 0);
     cart.totalQuantity = Math.max(cart.totalQuantity, 0);
-  
-    
+
+
     await cart.save();
-  
+
     return cart;
-  };
-  
+};
 
 
 
 
-  export const updateQuantityService = async (
+
+export const updateQuantityService = async (
     userId: string,
     BookId: string,
     quantityChange: number,
-  ): Promise<ICart> => {
+): Promise<ICart> => {
     const isUser = await User.findById(userId);
     if (!isUser) throw new Error('User doesnt exist');
 
@@ -131,7 +131,7 @@ export const removeItemService = async (
     if (!cart) throw new Error('Cart not found');
 
     const bookIndex = cart.books.findIndex(
-      (book) => book.bookId.toString() === BookId.toString(),
+        (book) => book.bookId.toString() === BookId.toString(),
     );
     if (bookIndex === -1) throw new Error('Book not found in cart');
 
@@ -142,33 +142,44 @@ export const removeItemService = async (
     const newQuantity = existingBook.quantity + quantityChange;
 
     if (newQuantity <= 0) {
-      cart.books.splice(bookIndex, 1);
+        cart.books.splice(bookIndex, 1);
 
-      cart.totalQuantity -= existingBook.quantity;
-      cart.totalPrice -= existingBook.quantity * bookDetails.price;
-      cart.totalDiscountPrice -=
-        existingBook.quantity * bookDetails.discountPrice;
+        cart.totalQuantity -= existingBook.quantity;
+        cart.totalPrice -= existingBook.quantity * bookDetails.price;
+        cart.totalDiscountPrice -=
+            existingBook.quantity * bookDetails.discountPrice;
 
-      if (cart.books.length === 0) {
-        cart.totalPrice = 0;
-        cart.totalDiscountPrice = 0;
-        cart.totalQuantity = 0;
-      }
+        if (cart.books.length === 0) {
+            cart.totalPrice = 0;
+            cart.totalDiscountPrice = 0;
+            cart.totalQuantity = 0;
+        }
+
+        await cart.save();
+        return cart;
+    }
+
+
+    if (quantityChange > 0 && newQuantity > bookDetails.quantity)
+        throw new Error('Not enough stock available for this book');
+
+
+    cart.books[bookIndex].quantity = newQuantity;
+    cart.totalQuantity += quantityChange;
+    cart.totalPrice += quantityChange * bookDetails.price;
+    cart.totalDiscountPrice += quantityChange * bookDetails.discountPrice;
 
     await cart.save();
     return cart;
-  }
-
-  
-  if (quantityChange > 0 && newQuantity > bookDetails.quantity)
-    throw new Error('Not enough stock available for this book');
-
-
-  cart.books[bookIndex].quantity = newQuantity;
-  cart.totalQuantity += quantityChange;
-  cart.totalPrice += quantityChange * bookDetails.price;
-  cart.totalDiscountPrice += quantityChange * bookDetails.discountPrice;
-
-  await cart.save();
-  return cart;
 };
+
+
+
+export const getCartService = async (userId: string): Promise<ICart | null> => {
+
+    const cart = await Cart.findOne({ userId: userId });
+
+    return cart;
+};
+
+
