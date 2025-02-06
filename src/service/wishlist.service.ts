@@ -9,7 +9,7 @@ export const addToWishlistService = async (
   ): Promise<IWishList> => {
     const bookDetails = await Book.findById(bookId);
 
-    if (!bookDetails) throw new Error('Book doesnt exist');
+    if (!bookDetails) throw new Error('Book doesnt exist in book collection');
 
     let wishlist = await Wishlist.findOne({ userId: userId });
 
