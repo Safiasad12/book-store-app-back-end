@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { userAuth } from "../middleware/auth.middleware";
-import { addToWishlist, getWishlist } from "../controller/wishlist.controller";
+import { addToWishlist, getWishlist, removeFromWishlist } from "../controller/wishlist.controller";
 
 const wishlistRouter = Router();
 
@@ -8,6 +8,8 @@ const wishlistRouter = Router();
 wishlistRouter.get('/', userAuth, getWishlist);
 
 wishlistRouter.post('/:BookId', userAuth, addToWishlist);
+
+wishlistRouter.delete('/:BookId', userAuth, removeFromWishlist);
 
 
 

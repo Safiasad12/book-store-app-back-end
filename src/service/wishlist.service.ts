@@ -62,3 +62,26 @@ export const addToWishlistService = async (
     return wishlist;
   };
 
+
+
+
+  export const removeFromWishlistService = async (
+    userId: string,
+    bookId: string
+  ): Promise<IWishList | void> => {
+
+        const wishList = await Wishlist.findOne({ userId: userId });
+    
+        if (!wishList) throw new Error('WishList does not exist!');
+    
+        const existingBook = wishList.books.find((book) => book.bookId === bookId);
+    
+        if (existingBook) {
+          wishList.books = wishList.books.filter((book) => book.bookId !== bookId);
+          await wishList.save();
+    
+        }
+        else 
+          throw new Error('WishList book does not exist!');
+    };
+

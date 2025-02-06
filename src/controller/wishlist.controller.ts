@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import HttpStatus from 'http-status-codes';
-import { addToWishlistService, getWishlistService } from "../service/wishlist.service";
+import { addToWishlistService, getWishlistService, removeFromWishlistService } from "../service/wishlist.service";
 
 
 export const addToWishlist = async (
@@ -42,6 +42,30 @@ export const addToWishlist = async (
     } catch (error: any) {
       res.status(HttpStatus.NOT_FOUND).json({
         code: HttpStatus.NOT_FOUND,
+        message: error.message,
+      });
+    }
+  };
+
+
+
+
+  export const removeFromWishlist = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      const wishlist =
+      await removeFromWishlistService(req.body.user_id, req.params.BookId);
+  
+      res.status(HttpStatus.OK).json({
+        code: HttpStatus.OK,
+        message: 'Book Removed From wishlist successfully',
+        data: wishlist,
+      });
+    } catch (error: any) {
+      res.status(HttpStatus.BAD_REQUEST).json({
+        code: HttpStatus.BAD_REQUEST,
         message: error.message,
       });
     }
