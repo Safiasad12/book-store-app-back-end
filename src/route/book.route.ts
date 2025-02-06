@@ -8,7 +8,7 @@ import { adminAuth } from "../middleware/auth.middleware";
 const bookRouter = Router();
 
 
-bookRouter.post('/', adminAuth, validateCreateBook, upload.single('bookImage'), createBook);
+bookRouter.post('/', adminAuth, upload.single('bookImage'), createBook);
 bookRouter.get('/', getAllBooks);
 bookRouter.get('/:BookId', validateBookId, getBookById);
 bookRouter.put('/:BookId', adminAuth, updateBookById);

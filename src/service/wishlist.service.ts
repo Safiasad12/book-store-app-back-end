@@ -8,6 +8,7 @@ export const addToWishlistService = async (
     bookId: string,
   ): Promise<IWishList> => {
     const bookDetails = await Book.findById(bookId);
+
     if (!bookDetails) throw new Error('Book doesnt exist');
 
     let wishlist = await Wishlist.findOne({ userId: userId });
@@ -47,3 +48,17 @@ export const addToWishlistService = async (
 
     return wishlist;
   };
+
+
+
+
+  export const getWishlistService = async (
+    userId: string
+  ): Promise<IWishList> => {
+    const wishlist = await Wishlist.findOne({ userId: userId });
+
+    if (!wishlist) throw new Error('Wishlist not found'); 
+
+    return wishlist;
+  };
+

@@ -13,7 +13,7 @@ const bookSchema = new Schema(
     },
     bookImage: {
       type: String,
-      default: ''
+      default: null
     },
     quantity: {
       type: Number,
