@@ -54,3 +54,16 @@ export const orderCartService = async (
 
     return createdData;
   };
+
+
+
+
+  export const getOrderDetailService = async (userId: string): Promise<IOrder[]> => {
+    const orders = await Order.find({ userId: userId });
+    // population
+    const populatedOrders = await Order.populate(orders, {
+      path: 'cart.books.bookId',
+      select: 'bookName bookImage author price discountPrice',  
+    });
+    return populatedOrders.length ? populatedOrders : [];
+};
