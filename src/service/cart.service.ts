@@ -2,6 +2,7 @@ import User from '../model/user.model';
 import { ICart } from '../interface/cart.interface';
 import Cart from '../model/cart.model';
 import Book from '../model/book.model';
+import redisClient from '../config/redisClient.config';
 
 export const addToCartService = async (
     userId: string,
@@ -71,6 +72,9 @@ export const addToCartService = async (
             },
             { new: true },
         );
+
+        await redisClient.del(`cart:${userId}`);
+
         return newBook;
     }
 };
@@ -108,8 +112,9 @@ export const removeItemService = async (
     cart.totalDiscountPrice = Math.max(cart.totalDiscountPrice, 0);
     cart.totalQuantity = Math.max(cart.totalQuantity, 0);
 
-
     await cart.save();
+
+    await redisClient.del(`cart:${userId}`);
 
     return cart;
 };
@@ -155,6 +160,9 @@ export const updateQuantityService = async (
         }
 
         await cart.save();
+
+        await redisClient.del(`cart:${userId}`);
+
         return cart;
     }
 
@@ -169,6 +177,9 @@ export const updateQuantityService = async (
     cart.totalDiscountPrice += quantityChange * bookDetails.discountPrice;
 
     await cart.save();
+
+    await redisClient.del(`cart:${userId}`);
+
     return cart;
 };
 
@@ -176,12 +187,21 @@ export const updateQuantityService = async (
 
 export const getCartDetailsService = async (userId: string): Promise<ICart> => {
 
+    const cachedCart = await redisClient.get(`cart:${userId}`);
+    if (cachedCart) {
+        console.log('cart details fetched from Redis');
+        return JSON.parse(cachedCart);
+    }
+
     const cart = await Cart.findOne({ userId: userId });
 
     if(!cart){
         throw new Error("no cart for this user")
     }
 
+    await redisClient.setEx(`cart:${userId}`, 3600, JSON.stringify(cart));
+
+    console.log("cart details fetched from mongo db")
     return cart;
 };
 
@@ -193,6 +213,7 @@ export const emptyCartService = async (
     const cart = await Cart.findOne({ userId });
     if (!cart) throw new Error('User doesnt have Cart');
     await Cart.deleteOne({ userId });
+    await redisClient.del(`cart:${userId}`);
   };
 
 
