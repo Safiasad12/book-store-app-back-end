@@ -6,27 +6,33 @@ const customerDetailsSchema = new Schema(
     userId: {
       type: String,
       required: true,
+      unique: true,
     },
     name: {
       type: String,
-      default: null,
+      required: true,
     },
     mobileNumber: {
       type: String,
-      default: null,
+      required: true,
+      unique: true,
     },
     address: {
       type: String,
-      default: null,
+      required: true,
     },
     state: {
       type: String,
-      default: null,
+      required: true,
     },
     city: {
       type: String,
-      default: null,
+      required: true,
     },
+    country: {
+        type: String,
+        required: true,
+    }
   },
   {
     timestamps: true,

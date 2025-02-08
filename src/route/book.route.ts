@@ -12,7 +12,7 @@ bookRouter.post('/', adminAuth, upload.single('bookImage'), createBook);
 bookRouter.get('/', getAllBooks);
 bookRouter.get('/:BookId', validateBookId, getBookById);
 bookRouter.put('/:BookId', adminAuth, updateBookById);
-bookRouter.delete('/:BookId', adminAuth, validateBookId, deleteBookById);
+bookRouter.delete('/:BookId', validateBookId, adminAuth, deleteBookById);
 
 
 export default bookRouter;
