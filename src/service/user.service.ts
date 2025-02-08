@@ -1,7 +1,8 @@
 import { IUser } from "../interface/user.interface";
 import User from "../model/user.model"; 
 import {hash, compare} from "../util/bcrypt.util";
-import { accessSign, refreshSign } from "../util/jwt.util";
+import { accessSign, refreshSign, resetSign } from "../util/jwt.util";
+import { sendMail } from "../util/mail.util";
 
 export const registerUser = async (body: Record<string, any>): Promise<IUser> => {
     const userExist = await User.findOne({ email: body.email });
@@ -15,7 +16,7 @@ export const registerUser = async (body: Record<string, any>): Promise<IUser> =>
 };
 
 
-export async function loginUser(body: { email: string, password: string }): Promise<{ accessToken: string, refreshToken: string }> {
+export const loginUser = async (body: { email: string, password: string }): Promise<{ accessToken: string, refreshToken: string }> => {
     const userExist = await User.findOne({ email: body.email });
     if (!userExist) {
         throw Error(`no user exist with mail ${body.email}`);
@@ -31,3 +32,13 @@ export async function loginUser(body: { email: string, password: string }): Prom
     return { accessToken, refreshToken };
 }
 
+
+
+export const forgotPasswordService = async (body: {email: string}): Promise<void> => {
+    const userExist = await User.findOne({email: body.email});
+    if(!userExist){
+        throw Error(`user with ${body.email} doesn't exist`);
+    }
+    const resetToken = resetSign({id: userExist._id, role: userExist.role});
+    await sendMail(body.email, 'Password Rest Token', `Your Password rest token is: ${resetToken}. Expires in 1 hour`)
+}

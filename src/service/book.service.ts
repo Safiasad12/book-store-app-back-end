@@ -43,7 +43,7 @@ export const getAllBookService = async (): Promise<[IBook[], number]> => {
   const totalBooks = await Book.countDocuments();
 
    // Store result in cache for 60 seconds
-   await redisClient.setEx(cacheKey, 60, JSON.stringify([books, totalBooks]));
+   await redisClient.setEx(cacheKey, 300, JSON.stringify([books, totalBooks]));
 
   return [books, totalBooks];
   };

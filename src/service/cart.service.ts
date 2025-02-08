@@ -199,7 +199,7 @@ export const getCartDetailsService = async (userId: string): Promise<ICart> => {
         throw new Error("no cart for this user")
     }
 
-    await redisClient.setEx(`cart:${userId}`, 3600, JSON.stringify(cart));
+    await redisClient.setEx(`cart:${userId}`, 300, JSON.stringify(cart));
 
     console.log("cart details fetched from mongo db")
     return cart;
