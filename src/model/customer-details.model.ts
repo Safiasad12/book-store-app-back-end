@@ -32,7 +32,7 @@ const customerDetailsSchema = new Schema(
     country: {
         type: String,
         required: true,
-    }
+    },
   },
   {
     timestamps: true,

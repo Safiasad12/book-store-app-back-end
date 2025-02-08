@@ -40,3 +40,39 @@ export const addCustomerDetailService = async (
         message: 'Customer details not found!',
       };
   };
+
+
+
+  export const updateCustomerDetailService = async (
+    body: ICustomerDetails,
+    customerId: string,
+  ): Promise<{
+    code: number;
+    data: ICustomerDetails | null;
+    message: string;
+  }> => {
+
+    const customerDetails = await CustomerDetails.findOne({_id: customerId });
+    
+    if (customerDetails) {
+      customerDetails.name = body.name || customerDetails.name;
+      customerDetails.mobileNumber = body.mobileNumber || customerDetails.mobileNumber;
+      customerDetails.address = body.address || customerDetails.address;
+      customerDetails.city = body.city || customerDetails.city;
+      customerDetails.state = body.state || customerDetails.state;
+      customerDetails.country = body.country || customerDetails.country;
+
+      const updatedDetails = await customerDetails.save();
+
+      return {
+        code: HttpStatus.ACCEPTED,
+        data: updatedDetails,
+        message: 'Customer details successfully updated!',
+      };
+    } else
+      return {
+        code: HttpStatus.BAD_REQUEST,
+        data: null,
+        message: 'Customer details not found!',
+      };
+  };

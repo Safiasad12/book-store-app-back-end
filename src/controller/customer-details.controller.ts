@@ -1,7 +1,7 @@
 
 import { Request, Response } from 'express';
 import HttpStatus from 'http-status-codes';
-import { addCustomerDetailService, getCustomerDetailService } from '../service/customer-details.service';
+import { addCustomerDetailService, getCustomerDetailService, updateCustomerDetailService } from '../service/customer-details.service';
 
 
 export const addCustomerDetails = async (
@@ -48,5 +48,32 @@ export const addCustomerDetails = async (
             data: null,
             message: error.message || 'An error occurred',
         });
+    }
+  };
+
+
+
+
+  export const updateCustomerDetails = async(
+    req: Request, 
+    res: Response,
+  ): Promise<void> => {
+    try {
+      console.log(req.body , req.params.customerId)
+      const result = 
+      await updateCustomerDetailService(req.body, req.params.customerId);
+      console.log(req.body , req.params.customerId)
+      res.status(result.code).json({
+          code: result.code,
+          data: result.data,
+          message: result.message,
+      });
+  } catch (error: any) {
+      console.error(error);
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          code: HttpStatus.INTERNAL_SERVER_ERROR,
+          data: null,
+          message: error.message || 'An error occurred',
+      });
     }
   };
