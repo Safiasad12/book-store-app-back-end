@@ -60,7 +60,6 @@ export const addCustomerDetailService = async (
       customerDetails.address = body.address || customerDetails.address;
       customerDetails.city = body.city || customerDetails.city;
       customerDetails.state = body.state || customerDetails.state;
-      customerDetails.country = body.country || customerDetails.country;
 
       const updatedDetails = await customerDetails.save();
 

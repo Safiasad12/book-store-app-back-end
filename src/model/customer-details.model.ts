@@ -10,7 +10,7 @@ const customerDetailsSchema = new Schema(
     },
     name: {
       type: String,
-      required: true,
+      default: null,
     },
     mobileNumber: {
       type: String,
@@ -19,19 +19,18 @@ const customerDetailsSchema = new Schema(
     },
     address: {
       type: String,
+      ddefault: null,
       required: true,
     },
     state: {
       type: String,
+      default: null,
       required: true,
     },
     city: {
       type: String,
+      default: null,
       required: true,
-    },
-    country: {
-        type: String,
-        required: true,
     },
   },
   {

@@ -7,5 +7,4 @@ export interface ICustomerDetails extends Document {
   address: string;
   state: string;
   city: string;
-  country: string;
 }
