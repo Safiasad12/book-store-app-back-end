@@ -53,18 +53,27 @@ export const orderCartService = async (
     );
     await emptyCartService(userId);
 
+    await redisClient.del(`orders:${userId}`);
 
     return createdData;
   };
 
-
-
-
   export const getOrderDetailService = async (userId: string): Promise<IOrder[]> => {
+
+    const cachedOrders = await redisClient.get(`orders:${userId}`);
+    if (cachedOrders) {
+        console.log('Order details fetched from Redis');
+        return JSON.parse(cachedOrders);
+    }
+
     const orders = await Order.find({ userId: userId });
     const populatedOrders = await Order.populate(orders, {
       path: 'cart.books.bookId',
       select: 'bookName bookImage author price discountPrice',  
     });
+
+    await redisClient.setEx(`orders:${userId}`, 300, JSON.stringify(populatedOrders));
+
+    console.log('Order details fetched from MongoDB');
     return populatedOrders.length ? populatedOrders : [];
 };
