@@ -42,3 +42,12 @@ export const forgotPasswordService = async (body: {email: string}): Promise<void
     const resetToken = resetSign({id: userExist._id, role: userExist.role});
     await sendMail(body.email, 'Password Rest Token', `Your Password rest token is: ${resetToken}. Expires in 1 hour`)
 }
+
+
+export const resetPasswordService = async (body: {user_id: string, newPassword: string}) => {
+    const userData = await User.findOne({_id: body.user_id});
+    if(!userData) throw new Error ('user not exist');
+    body.newPassword = await hash(body.newPassword);
+    userData.password = body.newPassword;
+    await userData.save();
+}

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { registerUser, loginUser, forgotPasswordService } from "../service/user.service";
+import { registerUser, loginUser, forgotPasswordService, resetPasswordService } from "../service/user.service";
 
 
 export const userRegistration = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -33,7 +33,18 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
             message: `reset token has been sent to ${req.body.email}`
         });
     } catch (error) {
-        console.log("abc")
+        next(error);
+    }
+}
+
+
+export const ResetPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const data = await resetPasswordService(req.body);
+        res.status(200).json({
+            message: 'your password has been reset'
+        });
+    } catch (error) {
         next(error);
     }
 }
