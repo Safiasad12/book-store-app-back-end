@@ -14,23 +14,20 @@ const customerDetailsSchema = new Schema(
     },
     mobileNumber: {
       type: String,
-      required: true,
       unique: true,
+      default: null,
     },
     address: {
       type: String,
-      ddefault: null,
-      required: true,
+      default: null,
     },
     state: {
       type: String,
       default: null,
-      required: true,
     },
     city: {
       type: String,
       default: null,
-      required: true,
     },
   },
   {

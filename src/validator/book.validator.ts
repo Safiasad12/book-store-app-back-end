@@ -1,86 +1,78 @@
-import Joi from 'joi';
-import { Request, Response, NextFunction } from 'express';
-import HttpStatus from 'http-status-codes';
+import { Request, Response, NextFunction } from "express";
+import Joi from "joi";
 
-// Validate book creation
-export const validateCreateBook = (req: Request, res: Response, next: NextFunction): void => {
+export const validateCreateBook = (req: Request, res: Response, next: NextFunction) : any => {
   const schema = Joi.object({
-    bookName: Joi.string().trim().required().messages({
-      'string.base': 'Book name must be a string.',
-      'any.required': 'Book name is required.'
+    bookName: Joi.string().required().messages({
+      "string.empty": "Book name is required",
     }),
-    author: Joi.string().trim().required().messages({
-      'string.base': 'Author must be a string.',
-      'any.required': 'Author is required.'
+    author: Joi.string().required().messages({
+      "string.empty": "Author name is required",
     }),
-    quantity: Joi.number().required().messages({
-      'number.base': 'Quantity must be a number.',
-      'any.required': 'Quantity is required.'
+    bookImage: Joi.string().optional(),
+    quantity: Joi.number().integer().min(1).required().messages({
+      "number.base": "Quantity must be a number",
+      "number.min": "Quantity must be at least 1",
     }),
-    price: Joi.number().required().messages({
-      'number.base': 'Price must be a number.',
-      'any.required': 'Price is required.'
+    price: Joi.number().min(0).required().messages({
+      "number.base": "Price must be a number",
+      "number.min": "Price cannot be negative",
     }),
-    description: Joi.string().trim().required().messages({
-      'string.base': 'Description must be a string.',
-      'any.required': 'Description is required.'
+    description: Joi.string().required().messages({
+      "string.empty": "Description is required",
     }),
-    discountPrice: Joi.number().required().messages({
-      'number.base': 'Discount price must be a number.',
-      'any.required': 'Discount price is required.'
-    })
+    discountPrice: Joi.number().min(0).required().messages({
+      "number.base": "Discount price must be a number",
+      "number.min": "Discount price cannot be negative",
+    }),
+    admin_user_id: Joi.string().required().messages({
+      "string.empty": "Admin ID is required",
+    }),
   });
 
-  const { error } = schema.validate(req.body);
+  const { error } = schema.validate(req.body, { abortEarly: false });
+
   if (error) {
-    res.status(HttpStatus.BAD_REQUEST).json({
-      code: HttpStatus.BAD_REQUEST,
-      errors: error.details.map((detail) => detail.message)
-    });
-  } else {
-    next();
+    return res.status(400).json({ errors: error.details.map((err) => err.message) });
   }
+
+  next();
 };
 
-// Validate book update
-export const validateUpdateBook = (req: Request, res: Response, next: NextFunction): void => {
+
+export const validateUpdateBook = (req: Request, res: Response, next: NextFunction) : any => {
   const schema = Joi.object({
-    bookName: Joi.string().trim().optional(),
-    author: Joi.string().trim().optional(),
-    quantity: Joi.number().optional(),
-    price: Joi.number().optional(),
-    description: Joi.string().trim().optional(),
-    discountPrice: Joi.number().optional(),
-    adminId: Joi.string().trim().optional()
+    bookName: Joi.string().optional(),
+    author: Joi.string().optional(),
+    bookImage: Joi.string().optional(),
+    quantity: Joi.number().integer().min(1).optional(),
+    price: Joi.number().min(0).optional(),
+    description: Joi.string().optional(),
+    discountPrice: Joi.number().min(0).optional(),
   });
 
-  const { error } = schema.validate(req.body);
+  const { error } = schema.validate(req.body, { abortEarly: false });
+
   if (error) {
-    res.status(HttpStatus.BAD_REQUEST).json({
-      code: HttpStatus.BAD_REQUEST,
-      errors: error.details.map((detail) => detail.message)
-    });
-  } else {
-    next();
+    return res.status(400).json({ errors: error.details.map((err) => err.message) });
   }
+
+  next();
 };
 
-// Validate book ID from params
-export const validateBookId = (req: Request, res: Response, next: NextFunction): void => {
+
+export const validateBookId = (req: Request, res: Response, next: NextFunction) : any => {
   const schema = Joi.object({
     BookId: Joi.string().required().messages({
-      'string.base': 'Book ID must be a string.',
-      'any.required': 'Book ID is required.'
-    })
+      "string.empty": "Book ID is required",
+    }),
   });
 
   const { error } = schema.validate(req.params);
+
   if (error) {
-    res.status(HttpStatus.BAD_REQUEST).json({
-      code: HttpStatus.BAD_REQUEST,
-      errors: error.details.map((detail) => detail.message)
-    });
-  } else {
-    next();
+    return res.status(400).json({ errors: error.details.map((err) => err.message) });
   }
+
+  next();
 };

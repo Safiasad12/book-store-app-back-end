@@ -4,6 +4,7 @@ import Book from '../model/book.model';
 import Cart from '../model/cart.model';
 import { IOrder } from '../interface/order.interface';
 import { emptyCartService, getCartDetailsService } from './cart.service';
+import redisClient from '../config/redisClient.config';
 
 
 export const orderCartService = async (
@@ -51,6 +52,7 @@ export const orderCartService = async (
         ),
     );
     await emptyCartService(userId);
+
 
     return createdData;
   };

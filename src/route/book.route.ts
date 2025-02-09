@@ -8,11 +8,11 @@ import { adminAuth } from "../middleware/auth.middleware";
 const bookRouter = Router();
 
 
-bookRouter.post('/', adminAuth, upload.single('bookImage'), createBook);
+bookRouter.post('/', adminAuth, upload.single('bookImage'), validateCreateBook, createBook);
 bookRouter.get('/', getAllBooks);
 bookRouter.get('/:BookId', validateBookId, getBookById);
-bookRouter.put('/:BookId', adminAuth, updateBookById);
-bookRouter.delete('/:BookId', validateBookId, adminAuth, deleteBookById);
+bookRouter.put('/:BookId', adminAuth, validateUpdateBook, updateBookById);
+bookRouter.delete('/:BookId', adminAuth, validateBookId, deleteBookById);
 
 
 export default bookRouter;
