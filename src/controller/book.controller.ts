@@ -15,11 +15,12 @@ export const createBook = async (req: Request, res: Response): Promise<void> => 
 };
 
 
-
 export const getAllBooks = async (req: Request, res: Response): Promise<void> => {
-
   try {
-    const data = await getAllBookService();
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const data = await getAllBookService(page, limit);
 
     res.status(HttpStatus.OK).json({
       code: HttpStatus.OK,

@@ -23,30 +23,40 @@ export const createBookService = async (bookData: IBook, filePath: string | unde
 };
 
 
+export const getAllBookService = async (
+  page: number = 1, 
+  limit: number = 10
+): Promise<{ books: IBook[], totalBooks: number, totalPages: number, currentPage: number }> => {
 
-export const getAllBookService = async (): Promise<[IBook[], number]> => {
-  
-  const cacheKey = 'allBooks';
+  const cacheKey = `allBooks:page=${page}:limit=${limit}`;
 
-   // Check cache
-   const cachedBooks = await redisClient.get(cacheKey);
-   if (cachedBooks) {
-     console.log('Cache hit');
-     return JSON.parse(cachedBooks);
-   }
+  const cachedBooks = await redisClient.get(cacheKey);
+  if (cachedBooks) {
+    console.log('Cache hit');
+    return JSON.parse(cachedBooks);
+  }
 
   console.log('Cache miss, fetching from DB');
-  const books = await Book.find()
+
+  const skip = (page - 1) * limit;
+  const books = await Book.find().skip(skip).limit(limit);
+  const totalBooks = await Book.countDocuments();
 
   if (books.length === 0) throw new Error('No Books Present');
 
-  const totalBooks = await Book.countDocuments();
+  const totalPages = Math.ceil(totalBooks / limit);
 
-   // Store result in cache for 60 seconds
-   await redisClient.setEx(cacheKey, 300, JSON.stringify([books, totalBooks]));
-
-  return [books, totalBooks];
+  const result = {
+    books,
+    totalBooks,
+    totalPages,
+    currentPage: page
   };
+
+  await redisClient.setEx(cacheKey, 300, JSON.stringify(result));
+
+  return result;
+};
 
 
   export const getBookByIdService = async (bookId: string): Promise<IBook | null> => {
@@ -63,8 +73,7 @@ export const getAllBookService = async (): Promise<[IBook[], number]> => {
 
     if (!book) throw new Error('Book Not found');
     
-     // Cache the result for 60 seconds
-    await redisClient.setEx(cacheKey, 60, JSON.stringify(book));
+    await redisClient.setEx(cacheKey, 300, JSON.stringify(book));
 
     console.log('Cache miss, fetching from DB');
     return book;
