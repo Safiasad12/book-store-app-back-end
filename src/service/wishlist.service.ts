@@ -1,6 +1,7 @@
 import Wishlist from '../model/wishlist.model';
 import Book from '../model/book.model';
 import { IWishList } from '../interface/wishlist.interface';
+import redisClient from '../config/redisClient.config';
 
 
 export const addToWishlistService = async (
@@ -46,6 +47,8 @@ export const addToWishlistService = async (
       } else throw new Error('Book already in wishlist');
     }
 
+    await redisClient.del(`wishlist:${userId}`);
+
     return wishlist;
   };
 
@@ -55,9 +58,20 @@ export const addToWishlistService = async (
   export const getWishlistService = async (
     userId: string
   ): Promise<IWishList> => {
+
+    const cachedWishlist = await redisClient.get(`wishlist:${userId}`);
+    if (cachedWishlist) {
+        console.log('Wishlist details fetched from Redis');
+        return JSON.parse(cachedWishlist);
+    }
+
     const wishlist = await Wishlist.findOne({ userId: userId });
 
     if (!wishlist) throw new Error('Wishlist not found'); 
+
+    await redisClient.setEx(`wishlist:${userId}`, 300, JSON.stringify(wishlist));
+
+    console.log('Wishlist details fetched from MongoDB');
 
     return wishlist;
   };
@@ -79,9 +93,10 @@ export const addToWishlistService = async (
         if (existingBook) {
           wishList.books = wishList.books.filter((book) => book.bookId !== bookId);
           await wishList.save();
+
+          await redisClient.del(`wishlist:${userId}`);
     
         }
-        else 
-          throw new Error('WishList book does not exist!');
+        else throw new Error('WishList book does not exist!');
     };
 
