@@ -1,7 +1,7 @@
 import { IUser } from "../interface/user.interface";
 import User from "../model/user.model"; 
 import {hash, compare} from "../util/bcrypt.util";
-import { accessSign, refreshSign, resetSign } from "../util/jwt.util";
+import { accessSign, refreshSign, refreshVerify, resetSign } from "../util/jwt.util";
 import { sendMail } from "../util/mail.util";
 
 export const registerUser = async (body: Record<string, any>): Promise<IUser> => {
@@ -50,4 +50,16 @@ export const resetPasswordService = async (body: {user_id: string, newPassword: 
     body.newPassword = await hash(body.newPassword);
     userData.password = body.newPassword;
     await userData.save();
+}
+
+
+export const refreshTokenService = async (body: { refreshToken: string }): Promise<string> => {
+    const payload: any = refreshVerify(body.refreshToken);
+    const userData = await User.findOne({_id: payload.id});
+    if(!userData) throw new Error('User not exist');
+    if (userData.refreshToken !== body.refreshToken) {
+        throw Error(`given refresh token doesn't exist`);
+    }
+    const newToken = accessSign({ id: userData._id, role: userData.role });
+    return newToken;
 }
