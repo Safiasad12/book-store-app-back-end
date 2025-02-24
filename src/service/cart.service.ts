@@ -6,80 +6,97 @@ import redisClient from '../config/redisClient.config';
 
 export const addToCartService = async (
     userId: string,
-    BookId: string
-): Promise<ICart | null> => {
-    const isUser = await User.findById(userId);
-
-    if (!isUser) throw new Error('User doesnt exist');
-
-    const cart = await Cart.findOne({ userId: userId });
-    const bookDetails = await Book.findOne({
-        _id: BookId,
+    books: { _id: string; quantity: number }[]
+  ): Promise<ICart | null> => {
+    try {
+      console.log("Received Books from Frontend:", books);
+  
+      const isUser = await User.findById(userId);
+      if (!isUser) throw new Error('User does not exist');
+  
+      let cart = await Cart.findOne({ userId });
+  
+      const bookDetailsList = await Book.find({
+        _id: { $in: books.map(b => b._id) },
         quantity: { $gt: 0 },
-    });
-    if (!bookDetails) throw new Error('Book doesnt exist');
-    if (!cart) {
-        const createdData = await Cart.create({
-            userId: userId,
-            totalPrice: bookDetails.price,
-            totalDiscountPrice: bookDetails.discountPrice,
-            totalQuantity: 1,
-            books: [{ bookId: bookDetails._id, quantity: 1, bookName: bookDetails.bookName, author: bookDetails.author, bookImage: bookDetails.bookImage, price: bookDetails.price, discountPrice: bookDetails.discountPrice, description: bookDetails.description }],
+      });
+  
+      console.log("Books found in DB:", bookDetailsList);
+  
+      if (!cart) {
+        const createdCart = await Cart.create({
+          userId,
+          totalPrice: bookDetailsList.reduce((acc, book) => acc + book.price, 0),
+          totalDiscountPrice: bookDetailsList.reduce((acc, book) => acc + book.discountPrice, 0),
+          totalQuantity: books.reduce((acc, book) => acc + book.quantity, 0),
+          books: bookDetailsList.map((book, index) => ({
+            bookId: book._id,
+            quantity: books[index].quantity,
+            bookName: book.bookName,
+            author: book.author,
+            bookImage: book.bookImage,
+            price: book.price,
+            discountPrice: book.discountPrice,
+            description: book.description,
+          })),
         });
-        return createdData;
+  
+        console.log("New Cart Created:", createdCart);
+        return createdCart;
+      }
+  
+      console.log("Cart Before Update:", cart);
+  
+      let totalQuantity = cart.totalQuantity;
+      let totalPrice = cart.totalPrice;
+      let totalDiscountPrice = cart.totalDiscountPrice;
+  
+      for (const { _id, quantity } of books) {
+        const bookIndex = cart.books.findIndex((b) => b.bookId.toString() === _id);
+        const bookDetails = bookDetailsList.find((b) => b._id.toString() === _id);
+  
+        if (!bookDetails) continue;
+  
+        if (bookIndex !== -1) {
+          if (cart.books[bookIndex].quantity + quantity > bookDetails.quantity) {
+            throw new Error(`Book ${bookDetails.bookName} is out of stock`);
+          }
+  
+          cart.books[bookIndex].quantity += quantity;
+        } else {
+          cart.books.push({
+            bookId: bookDetails._id.toString(),
+            quantity,
+            bookName: bookDetails.bookName,
+            author: bookDetails.author,
+            bookImage: bookDetails.bookImage,
+            price: bookDetails.price,
+            discountPrice: bookDetails.discountPrice,
+            description: bookDetails.description,
+          });
+        }
+  
+        totalQuantity += quantity;
+        totalPrice += bookDetails.price * quantity;
+        totalDiscountPrice += bookDetails.discountPrice * quantity;
+      }
+  
+      cart.totalQuantity = totalQuantity;
+      cart.totalPrice = totalPrice;
+      cart.totalDiscountPrice = totalDiscountPrice;
+  
+      await cart.save();
+      console.log("Cart After Save:", cart);
+  
+      await redisClient.del(`cart:${userId}`);
+  
+      return cart;
+    } catch (error: any) {
+      console.error("Error in addToCartService:", error);
+      throw new Error(error.message || "Failed to add to cart");
     }
-
-    const book = cart.books.findIndex((book) => book.bookId === BookId);
-
-    if (book !== -1) {
-        if (cart.books[book].quantity + 1 > bookDetails.quantity)
-            throw new Error('Out of Stock');
-
-        const existData = await Cart.findOneAndUpdate(
-            { userId: userId, 'books.bookId': BookId },
-            {
-                $inc: {
-                    'books.$.quantity': 1,
-                    totalPrice: bookDetails.price,
-                    totalDiscountPrice: bookDetails.discountPrice,
-                    totalQuantity: 1,
-                },
-            },
-            { new: true },
-        );
-        return existData;
-    } else {
-        const newBook = await Cart.findOneAndUpdate(
-            { userId: userId },
-            {
-                $inc: {
-                    totalQuantity: 1,
-                    totalPrice: bookDetails.price,
-                    totalDiscountPrice: bookDetails.discountPrice,
-                },
-                $push: {
-                    books: {
-                        bookId: BookId,
-                        quantity: 1,
-                        bookName: bookDetails.bookName,
-                        author: bookDetails.author,
-                        bookImage: bookDetails.bookImage,
-                        price: bookDetails.price,
-                        discountPrice: bookDetails.discountPrice,
-                        description: bookDetails.description
-                    },
-                },
-            },
-            { new: true },
-        );
-
-        await redisClient.del(`cart:${userId}`);
-
-        return newBook;
-    }
-};
-
-
+  };
+  
 
 
 export const removeItemService = async (
@@ -124,65 +141,71 @@ export const removeItemService = async (
 
 
 export const updateQuantityService = async (
-    userId: string,
-    BookId: string,
-    quantityChange: number,
+  userId: string,
+  BookId: string,
+  quantityChange: number,
 ): Promise<ICart> => {
-    const isUser = await User.findById(userId);
-    if (!isUser) throw new Error('User doesnt exist');
+  if (isNaN(quantityChange)) {
+      throw new Error('Invalid quantityChange value');
+  }
 
-    const cart = await Cart.findOne({ userId: userId });
-    if (!cart) throw new Error('Cart not found');
+  const isUser = await User.findById(userId);
+  if (!isUser) throw new Error('User doesnt exist');
 
-    const bookIndex = cart.books.findIndex(
-        (book) => book.bookId.toString() === BookId.toString(),
-    );
-    if (bookIndex === -1) throw new Error('Book not found in cart');
+  const cart = await Cart.findOne({ userId: userId });
+  if (!cart) throw new Error('Cart not found');
 
-    const bookDetails = await Book.findOne({ _id: BookId });
-    if (!bookDetails) throw new Error('Book not found');
+  const bookIndex = cart.books.findIndex(
+      (book) => book.bookId.toString() === BookId.toString(),
+  );
+  if (bookIndex === -1) throw new Error('Book not found in cart');
 
-    const existingBook = cart.books[bookIndex];
-    const newQuantity = existingBook.quantity + quantityChange;
+  const bookDetails = await Book.findOne({ _id: BookId });
+  if (!bookDetails) throw new Error('Book not found');
 
-    if (newQuantity <= 0) {
-        cart.books.splice(bookIndex, 1);
+  console.log('Book Details:', bookDetails);
+  console.log('Book Price:', bookDetails.price, 'Discount Price:', bookDetails.discountPrice);
+  console.log('Quantity Change:', quantityChange);
 
-        cart.totalQuantity -= existingBook.quantity;
-        cart.totalPrice -= existingBook.quantity * bookDetails.price;
-        cart.totalDiscountPrice -=
-            existingBook.quantity * bookDetails.discountPrice;
+  const existingBook = cart.books[bookIndex];
+  const newQuantity = existingBook.quantity + quantityChange;
 
-        if (cart.books.length === 0) {
-            cart.totalPrice = 0;
-            cart.totalDiscountPrice = 0;
-            cart.totalQuantity = 0;
-        }
+  if (newQuantity <= 0) {
+      cart.books.splice(bookIndex, 1);
 
-        await cart.save();
+      cart.totalQuantity -= existingBook.quantity;
+      cart.totalPrice -= existingBook.quantity * (Number(bookDetails.price) || 0);
+      cart.totalDiscountPrice -= existingBook.quantity * (Number(bookDetails.discountPrice) || 0);
 
-        await redisClient.del(`cart:${userId}`);
+      if (cart.books.length === 0) {
+          cart.totalPrice = 0;
+          cart.totalDiscountPrice = 0;
+          cart.totalQuantity = 0;
+      }
 
-        return cart;
-    }
+      await cart.save();
+      await redisClient.del(`cart:${userId}`);
 
+      return cart;
+  }
 
-    if (quantityChange > 0 && newQuantity > bookDetails.quantity)
-        throw new Error('Not enough stock available for this book');
+  if (newQuantity > bookDetails.quantity) {
+      throw new Error('Not enough stock available for this book');
+  }
 
+  const bookPrice = Number(bookDetails.price) || 0;
+  const discountPrice = Number(bookDetails.discountPrice) || 0;
 
-    cart.books[bookIndex].quantity = newQuantity;
-    cart.totalQuantity += quantityChange;
-    cart.totalPrice += quantityChange * bookDetails.price;
-    cart.totalDiscountPrice += quantityChange * bookDetails.discountPrice;
+  cart.books[bookIndex].quantity = newQuantity;
+  cart.totalQuantity += quantityChange;
+  cart.totalPrice += quantityChange * bookPrice;
+  cart.totalDiscountPrice += quantityChange * discountPrice;
 
-    await cart.save();
+  await cart.save();
+  await redisClient.del(`cart:${userId}`);
 
-    await redisClient.del(`cart:${userId}`);
-
-    return cart;
+  return cart;
 };
-
 
 
 export const getCartDetailsService = async (userId: string): Promise<ICart> => {
@@ -199,7 +222,7 @@ export const getCartDetailsService = async (userId: string): Promise<ICart> => {
         throw new Error("no cart for this user")
     }
 
-    await redisClient.setEx(`cart:${userId}`, 300, JSON.stringify(cart));
+    // await redisClient.setEx(`cart:${userId}`, 300, JSON.stringify(cart));
 
     console.log("cart details fetched from mongo db")
     return cart;

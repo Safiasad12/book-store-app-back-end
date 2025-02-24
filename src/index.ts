@@ -5,11 +5,19 @@ import logger from "./config/logger.config";
 import connectDB from "./config/database.config";
 import * as router from "./route/index.route";
 import { notFound, errorHandler } from "./middleware/error.middleware";
+import cors from 'cors';
 
 
 
 const app = express();
 dotenv.config();
+
+app.use(
+  cors({
+    origin: "http://localhost:4200",
+  })
+)
+
 connectDB();
 
 const morganFormat = ":method :url :status :response-time ms";

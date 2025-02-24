@@ -11,7 +11,7 @@ cartRouter.get('/', userAuth, getCartDetails);
 
 cartRouter.delete('/', userAuth, emptyCart);
 
-cartRouter.post('/:BookId', userAuth, addBookValid, addToCart);
+cartRouter.post('/', userAuth, addToCart);
 
 cartRouter.put('/:BookId', userAuth, updateQuantity);
 

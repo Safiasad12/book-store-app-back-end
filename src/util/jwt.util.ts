@@ -24,12 +24,12 @@ export function refreshVerify(token: string) {
     return jwt.verify(token, JWT_SECRET_REFRESH);
 }
 
-export function resetSign(payload: {id: string, role: string}){
+export function resetSign(payload: {id: string, role: string}) {
     const token = jwt.sign(payload, JWT_SECRET_RESET,{expiresIn: '1h'});
     return token;
 }
 
-export function resetVerify(token: string){
+export function resetVerify(token: string) {
     const payload = jwt.verify(token, JWT_SECRET_RESET);
     return payload;
 }

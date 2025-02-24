@@ -16,7 +16,6 @@ export const createBookService = async (bookData: IBook, filePath: string | unde
   const book = new Book(updatedBookData);
   const savedBook = await book.save();
 
-   // Clear books cache to ensure fresh data
    await redisClient.del('allBooks');
 
   return savedBook;
@@ -89,7 +88,6 @@ export const getAllBookService = async (
     if (!book) throw new Error('Book Not Exist');
 
 
-    // Clear cache for updated book
     await redisClient.del(`book:${bookId}`);
     await redisClient.del('allBooks');
 
@@ -99,12 +97,10 @@ export const getAllBookService = async (
 
  
 
-
   export const  deleteBookByIdService = async (bookId: string): Promise<void> => {
     const book = await Book.findByIdAndDelete(bookId);
     if (!book) throw new Error('Book not found');
     else{
-        // Remove cache entries
         await redisClient.del(`book:${bookId}`);
         await redisClient.del('allBooks');
     }

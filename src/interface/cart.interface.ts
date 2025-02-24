@@ -8,5 +8,11 @@ export interface ICart extends Document {
   books: {
     bookId: string;
     quantity: number;
+    bookName: string;
+    author: string;
+    bookImage: string;
+    price: number;
+    discountPrice: number;
+    description: string;
   }[];
 }

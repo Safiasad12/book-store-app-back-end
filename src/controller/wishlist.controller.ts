@@ -2,28 +2,29 @@ import { Request, Response } from 'express';
 import HttpStatus from 'http-status-codes';
 import { addToWishlistService, getWishlistService, removeFromWishlistService } from "../service/wishlist.service";
 
-
-export const addToWishlist = async (
-    req: Request,
-    res: Response
-  ): Promise<void> => {
-    try {
-
-      const wishlist = await addToWishlistService (req.body.user_id, req.params.BookId);
-
-      res.status(HttpStatus.OK).json({
-        code: HttpStatus.OK,
-        message: 'Book added to wishlist successfully',
-        data: wishlist,
-      });
-      
-    } catch (error: any) {
-      res.status(HttpStatus.BAD_REQUEST).json({
-        code: HttpStatus.BAD_REQUEST,
-        message: error.message,
-      });
+export const addToWishlist = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.body.user_id; 
+    const { bookIds } = req.body; 
+    if (!Array.isArray(bookIds) || bookIds.length === 0) {
+      throw new Error("Invalid bookIds. It should be a non-empty array.");
     }
-  };
+
+    const wishlist = await addToWishlistService(userId, bookIds);
+
+    res.status(HttpStatus.OK).json({
+      code: HttpStatus.OK,
+      message: "Books added to wishlist successfully",
+      data: wishlist,
+    });
+
+  } catch (error: any) {
+    res.status(HttpStatus.BAD_REQUEST).json({
+      code: HttpStatus.BAD_REQUEST,
+      message: error.message,
+    });
+  }
+};
 
 
   export const getWishlist = async (

@@ -7,7 +7,7 @@ const wishlistRouter = Router();
 
 wishlistRouter.get('/', userAuth, getWishlist);
 
-wishlistRouter.post('/:BookId', userAuth, addToWishlist);
+wishlistRouter.post('/', userAuth, addToWishlist);
 
 wishlistRouter.delete('/:BookId', userAuth, removeFromWishlist);
 

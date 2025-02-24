@@ -3,54 +3,41 @@ import Book from '../model/book.model';
 import { IWishList } from '../interface/wishlist.interface';
 import redisClient from '../config/redisClient.config';
 
+export const addToWishlistService = async (userId: string, bookIds: string[]): Promise<IWishList> => {
+  let wishlist = await Wishlist.findOne({ userId });
 
-export const addToWishlistService = async (
-    userId: string,
-    bookId: string,
-  ): Promise<IWishList> => {
+  if (!wishlist) {
+    wishlist = new Wishlist({ userId, books: [] });
+  }
+
+  for (const bookId of bookIds) {
     const bookDetails = await Book.findById(bookId);
 
-    if (!bookDetails) throw new Error('Book doesnt exist in book collection');
-
-    let wishlist = await Wishlist.findOne({ userId: userId });
-
-    if (!wishlist) {
-      wishlist = new Wishlist({
-        userId,
-        books: [
-          {
-            bookId: bookDetails._id.toString(),
-            bookName: bookDetails.bookName,
-            author: bookDetails.author,
-            price: bookDetails.price,
-            discountedPrice: bookDetails.discountPrice,
-            bookImage: bookDetails.bookImage
-          },
-        ],
-      });
-      await wishlist.save();
-    } else {
-      const bookExists = wishlist.books.some(
-        (book) => book.bookId.toString() === bookId,
-      );
-
-      if (!bookExists) {
-        wishlist.books.push({
-          bookId: bookDetails._id.toString(),
-          bookName: bookDetails.bookName,
-          author: bookDetails.author,
-          price: bookDetails.price,
-          bookImage: bookDetails.bookImage,
-          discountedPrice: bookDetails.discountPrice,
-        });
-        await wishlist.save();
-      } else throw new Error('Book already in wishlist');
+    if (!bookDetails) {
+      throw new Error(`Book with ID ${bookId} doesn't exist in book collection`);
     }
 
-    await redisClient.del(`wishlist:${userId}`);
+    const bookExists = wishlist.books.some((book) => book.bookId.toString() === bookId);
 
-    return wishlist;
-  };
+    if (!bookExists) {
+      wishlist.books.push({
+        bookId: bookDetails._id.toString(),
+        bookName: bookDetails.bookName,
+        author: bookDetails.author,
+        price: bookDetails.price,
+        discountedPrice: bookDetails.discountPrice,
+        bookImage: bookDetails.bookImage
+      });
+    }
+  }
+
+  await wishlist.save();
+
+  // Clear Redis cache after updating the wishlist
+  await redisClient.del(`wishlist:${userId}`);
+
+  return wishlist;
+};
 
 
 

@@ -4,29 +4,58 @@ import { addToCartService, emptyCartService, getCartDetailsService, removeItemSe
 
 
 
-export const addToCart = async (req: Request, res: Response): Promise<void> => {
-    try{
+// export const addToCart = async (req: Request, res: Response): Promise<void> => {
+//     try{
 
-    const data = await addToCartService(req.body.user_id, req.params.BookId)
+//     const data = await addToCartService(req.body.user_id, req.params.BookId)
 
-    res.status(HttpStatus.OK).json({
-      code : HttpStatus.OK,
-      data : data
-    })
-    }
-    catch(error: any){
-      res.status(HttpStatus.BAD_REQUEST).json({
+//     res.status(HttpStatus.OK).json({
+//       code : HttpStatus.OK,
+//       data : data
+//     })
+//     }
+//     catch(error: any){
+//       res.status(HttpStatus.BAD_REQUEST).json({
+//         code: HttpStatus.BAD_REQUEST,
+//         error: error.message,
+//       });
+//     }
+//   };
+
+
+export const addToCart = async (req: Request, res: Response): Promise<any> => {
+
+
+  try {
+    const userId = req.body.user_id; // 🆕 Extract user ID from token middleware
+    const { books } = req.body; // Only books array in request
+
+    if (!books || !Array.isArray(books) || books.length === 0) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
         code: HttpStatus.BAD_REQUEST,
-        error: error.message,
+        error: 'Books array is required',
       });
     }
-  };
+
+    const data = await addToCartService(userId, books);
+
+    res.status(HttpStatus.OK).json({
+      code: HttpStatus.OK,
+      data: data
+    });
+  } catch (error: any) {
+    res.status(HttpStatus.BAD_REQUEST).json({
+      code: HttpStatus.BAD_REQUEST,
+      error: error.message,
+    });
+  }
+};
+
 
 
 
   export const removeItem = async (req: Request, res: Response): Promise<void> => {
     try {
-  
       const data = await removeItemService(req.body.user_id, req.params.BookId);
   
       res.status(HttpStatus.OK).json({
